@@ -1,0 +1,112 @@
+public class LoginActivity extends BaseMvvmActivity<LoginViewModel, ActivityLoginBinding, LoginRouter>
+        implements View.OnClickListener , GoogleApiClient.OnConnectionFailedListener{
+
+    private static final int RC_SIGN_IN = 420;
+    private static final String TAG = "LoginActivity";
+
+    private GoogleApiClient mGoogleApiClient;
+    private SignInButton googleButton;
+    private ImageView fbImage, googleImage;
+
+
+    @Override
+    protected LoginViewModel provideViewModel() {
+        return ViewModelProviders.of(this).get(LoginViewModel.class);
+    }
+
+    @Override
+    protected int provideLayoutId() {
+        return R.layout.activity_login;
+    }
+
+    @Override
+    protected LoginRouter provideRouter() {
+        return new LoginRouter(this);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            if (result.isSuccess()) {
+                final GoogleSignInAccount account = result.getSignInAccount();
+
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            String scope = "oauth2:" + Scopes.EMAIL + " " + Scopes.PROFILE;
+                            String accessToken = GoogleAuthUtil.getToken(getApplicationContext(), account.getAccount(), scope, new Bundle());
+                            provideViewModel().loginSocial(accessToken);
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (GoogleAuthException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                AsyncTask.execute(runnable);
+
+            } else {
+              
+            }
+        }
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        //google button
+        googleImage = findViewById(R.id.imageGoogle);
+
+        initializeControls();
+        initializeGPlusSettings();
+    }
+
+
+    public static Intent getIntent(Activity activity) {
+        Intent intent = new Intent(activity, LoginActivity.class);
+        return intent;
+    }
+
+    private void initializeControls() {
+        googleButton = findViewById(R.id.btn_sign_in);
+        googleButton.setOnClickListener(this);
+    }
+
+    private void initializeGPlusSettings() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+    }
+
+
+    private void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    public void onClick(View v) {
+        if (v == fbImage) {
+          //facebook
+        } else if (v == googleImage) {
+            signIn();
+        }
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(LoginActivity.this, "Ошибка", Toast.LENGTH_SHORT).show();
+    }
+
+
+}
