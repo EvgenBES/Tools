@@ -1,0 +1,103 @@
+public class LoginActivity extends BaseMvvmActivity<LoginViewModel, ActivityLoginBinding, LoginRouter> {
+
+    private CallbackManager callbackManager;
+    private ProgressDialog progressDialog;
+    private LoginButton fbLoginButton;
+    private ImageView fbImage, googleImage;
+
+
+    @Override
+    protected LoginViewModel provideViewModel() {
+        return ViewModelProviders.of(this).get(LoginViewModel.class);
+    }
+
+    @Override
+    protected int provideLayoutId() {
+        return R.layout.activity_login;
+    }
+
+    @Override
+    protected LoginRouter provideRouter() {
+        return new LoginRouter(this);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        //facebook login button
+        fbLoginButton = findViewById(R.id.fb_loginButton);
+        fbImage = findViewById(R.id.imageFacebook);
+        googleImage = findViewById(R.id.imageGoogle);
+
+
+        //get token
+        callbackManager = CallbackManager.Factory.create();
+        fbLoginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                progressDialog = new ProgressDialog(LoginActivity.this);
+                progressDialog.setMessage("Get resource...");
+                progressDialog.show();
+
+                String accesstoken = loginResult.getAccessToken().getToken();
+
+                progressDialog.dismiss();
+                provideViewModel().loginSocial(accesstoken); //request bd token 
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException error) {
+                router.showError(error);
+            }
+        });
+
+//        printKeyHash(); // this method get hash key 
+    }
+
+    public static Intent getIntent(Activity activity) {
+        Intent intent = new Intent(activity, LoginActivity.class);
+        return intent;
+    }
+
+
+    public void onClick(View v) {
+        if (v == fbImage) {
+            fbLoginButton.performClick();
+        } else if (v == googleImage) {
+            Log.d("LoginActivity", "onClick: Google Image");
+//            signIn();
+        }
+    }
+
+    //Get SHA project
+//    public void printKeyHash() {
+//        try {
+//            final PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES);
+//            final Signature[] signatures = packageInfo.signingInfo.getApkContentsSigners();
+//            final MessageDigest md = MessageDigest.getInstance("SHA");
+//            for (Signature signature : signatures) {
+//                md.update(signature.toByteArray());
+//                final String signatureBase64 = new String(Base64.encode(md.digest(), Base64.DEFAULT));
+//                Log.d("Signature", "Signature Base64" + signatureBase64);
+//            }
+//        } catch (PackageManager.NameNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+}
