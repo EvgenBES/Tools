@@ -1,0 +1,13 @@
+/** XML **/
+<ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:src="@drawable/ic_round_add_button"
+                    app:onTouchListener="@{viewModel::onPlusTouched}"/>
+                    
+/** ViewModel **/
+fun onPlusTouched(v: View, event: MotionEvent): Boolean {
+        //my code
+        return true // or return false, depending on what you want to do
+    }
