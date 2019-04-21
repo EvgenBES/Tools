@@ -1,0 +1,21 @@
+@BindingAdapter("second")
+fun setSecondImage(view: ImageView, url: String?) {
+        Picasso.get()
+            .load(url)
+            .placeholder(R.drawable.ic_hourglass)
+            .error(R.drawable.ic_cancel)
+            .into(view)
+}
+
+@BindingAdapter("app:src")
+fun setImageResource(imageView: ImageView, resource: Int) {
+    imageView.setImageResource(resource)
+}
+
+
+@BindingAdapter("app:progress")
+fun setLayoutHeight(view: View, width: Int) {
+    val layoutParams = view.layoutParams
+    layoutParams.width = width
+    view.layoutParams = layoutParams
+}
