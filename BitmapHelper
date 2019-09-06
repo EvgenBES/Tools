@@ -16,6 +16,5 @@ object BitmapHelper {
         if (bitmap != newBitmap)  bitmap.recycle()
 
         return newBitmap
-    }
-    
+    }    
 }
