@@ -1,0 +1,13 @@
+class ListToStringConverter {
+    @TypeConverter
+    fun fromString(value: String): List<String> {
+        val listType = object : TypeToken<List<String>>() {}.type
+        return Gson().fromJson(value, listType)
+    }
+
+    @TypeConverter
+    fun fromListLisr(list: List<String>): String {
+        val gson = Gson()
+        return gson.toJson(list)
+    }
+}
